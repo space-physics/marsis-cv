@@ -4,38 +4,36 @@ function playFrames(ImgD,nFrames,hMP,hCCf,hPl,hHst,PixRng,HistRng,PrC,Hit)
 % hHst.iPxPk is freq, alt converted (interpolated) to row, col indicies for ImgD
 
 %==== play the frames! ====
-    for k = 1:nFrames
-        ImgFrame = squeeze(ImgD(:,:,k));
-            pause(0.02)
-            
-            %update main "data playback" window
-            set(hMP.img,'cdata',ImgFrame)
-            
-            %update title with current frame #
-   set(hMP.t,'String',['Data, Frame #',int2str(k),' / ',int2str(nFrames)]) %<-- this line actually consumes a lot of time!
+for k = 1:nFrames
+    ImgFrame = squeeze(ImgD(:,:,k));
+    pause(0.02)
+
+    %update main "data playback" window
+    set(hMP.img,'cdata',ImgFrame)
+
+    %update title with current frame #
+    set(hMP.t,'String',['Data, Frame #',int2str(k),' / ',int2str(nFrames)]) %<-- this line actually consumes a lot of time!
             %set(hMP.t,'String',['Data, Frame #',int2str(k)])
 %% update histograms (if present)
-            if PrC(9) %user wants histograms
-
-                
-if ~PrC(1) % histogram of entire frame
-    [yb,~] = hist( ImgFrame(:) , HistRng ); %compute histogram
-     set(hHst.h.br,'ydata',yb) %update histogram
-     set(hHst.h.HstTitle,'String',...
-      ['Histogram for all frequencies. Frame #',int2str(k)])
+    if PrC(9) %user wants histograms
+        if ~PrC(1) % histogram of entire frame
+            [yb,~] = hist( ImgFrame(:) , HistRng ); %compute histogram
+             set(hHst.h.br,'ydata',yb) %update histogram
+             set(hHst.h.HstTitle,'String',...
+              ['Histogram for all frequencies. Frame #',int2str(k)])
 %===========================================
-else %histogram of frequency(ies)
+        else %histogram of frequency(ies)
 %====== update 1st freq histogram (should make this a for loop)
-    [yb,~] = hist( ImgFrame(:,hHst.iPxPk(1,2)) , HistRng ); %compute histogram
-     set(hHst.h.br,'ydata',yb) %update histogram
-     set(hHst.h.HstTitle,'String',...
-      ['Histogram at: ',num2str(hHst.histFreq(1)),' MHz. Frame #',int2str(k)])
+        [yb,~] = hist( ImgFrame(:,hHst.iPxPk(1,2)) , HistRng ); %compute histogram
+         set(hHst.h.br,'ydata',yb) %update histogram
+         set(hHst.h.HstTitle,'String',...
+          ['Histogram at: ',num2str(hHst.histFreq(1)),' MHz. Frame #',int2str(k)])
 %====== update 2nd freq histogram (should make this a for loop)
 %             [yb,~] = hist(ImgFrame(:,hHst.iPxPk(2,2)), HistRng);
 %                 set(hHst2.br,'ydata',yb)
 %=========
-end
-            end
+        end
+    end
 %% update connected components plot
 if PrC(5)
       set(hCCf.ccImg,'cdata',Hit(:,:,k))

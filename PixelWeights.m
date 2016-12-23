@@ -1,4 +1,5 @@
-function [wgtNext, muNext, sigNext, rho, HitCand,iwNextPix,RealHit] = PixelWeights(NextPix,wgtCurr,muCurr,sigCurr,K,lrnR,sigmaThres,BackgroundThres)
+function [wgtNext, muNext, sigNext, rho, HitCand,iwNextPix,RealHit] =...
+  PixelWeights(NextPix,wgtCurr,muCurr,sigCurr,K,lrnR,sigmaThres,BackgroundThres)
 
 HitCand=false; %initialize
 lMatch = zeros(1,K); % Eq. 5 p.249 Grimson

@@ -8,11 +8,18 @@ function hPl = MDproc(ProgMode,fn,EdgeMode)
 close all
 
 % temp patch ---------
-load('alts.mat'), hPl.AltitudeKM = AltitudeKM;
-% temp patch ----------
+try
+  load('alts.mat')
+  hPl.AltitudeKM = AltitudeKM;
+catch
+  hPl.AltitudeKM = 200;
+end
+% END temp patch ----------
 
 if nargin<1, ProgMode = 'histo'; end
-if nargin<2 || isempty(fn), fn = '~/EC500/data/frm_ais_rdr_2108_data.mat'; end
+if nargin<2 || isempty(fn)
+  fn = '../marsis-utils/data/RDR601X/frm_ais_rdr_6019.mat';  %2108.dat
+end
 if nargin<3, EdgeMode = 'edge'; end
 
 c = 299792458; % [m/s] vacuum speed of light
@@ -21,7 +28,9 @@ pFreq= [0 6]; %[Mhz] frequency range to examine for cyclotron oscillation
 
 %try load('defFileTifPlay.mat'),catch, fn = 'frm_ais_rdr_2107_data.mat'; end
 %uigetfile({'*.mat';'*.tif';'*.mj2';'*.avi'},'Choose TIF video',fn);
-if ~isempty(fn),save('defFileTifPlay.mat','fn'),end
+if ~isempty(fn)
+  save('defFileTifPlay.mat','fn')
+end
 %display(['Filename: ',fn])
 
 hPl.OversampleFactor = 1; %not yet working fully (2012-03-17)
@@ -130,33 +139,36 @@ end
 
 
 set(0,'DefaulttextUnits','normalized') %make units of Text normalized
-
+Nfreq = 160;
 %% load data
-          Img = load(fn); 
-          ImgD = Img.ImgS;
-          hPl.nRow = hPl.OversampleFactor .* size(ImgD,1); 
-          hPl.nCol = hPl.OversampleFactor .* size(ImgD,2); 
-          nFramesAvail = size(ImgD,3);
-          nFrames = min(nFramesAvail,LIMnFrames);
-          display(['Will use frames 1 to ',int2str(nFrames),' out of ',int2str(nFramesAvail),...
-              ' frames available in file:',fn])
-          hPl.freqMHz = Img.freqMHz;
-          
-          % list of frequencies corresponding to x-pixels
-          hPl.freqLin = linspace(hPl.freqMHz(1),hPl.freqMHz(end),hPl.nCol)';
-          
-          % list of alittudes corresponding to y-pixels
-          hPl.AltInt = linspace(hPl.AltitudeKM(1),hPl.AltitudeKM(end),hPl.nRow);
-          
-          InterpImgD(hPl.nRow,hPl.nCol,nFrames) = nan;
-          for i = 1:nFrames
-          InterpImgD(:,:,i) = interp2(hPl.freqMHz,hPl.AltitudeKM,squeeze(ImgD(:,:,i)),hPl.freqLin,hPl.AltInt);
-          end
+Img = load(fn); 
+ImgD = Img.signal_z; %.ImgS;
+hPl.nRow = hPl.OversampleFactor * Nfreq; 
+hPl.nCol = hPl.OversampleFactor * size(ImgD,1); 
+nFramesAvail = size(ImgD,2)/Nfreq; %size(ImgD,3);
+nFrames = min(nFramesAvail,LIMnFrames);
+disp(['Will use frames 1 to ',int2str(nFrames),' out of ',int2str(nFramesAvail),...
+    ' frames available in file:',fn])
+hPl.freqMHz = Img.frequency_y(1:Nfreq)/1e3; % FIXME frequency is always constant per recent article(?)
+
+% list of frequencies corresponding to x-pixels
+hPl.freqLin = linspace(hPl.freqMHz(1),hPl.freqMHz(end),hPl.nCol)';
+
+% list of alittudes corresponding to y-pixels
+hPl.AltInt = linspace(hPl.AltitudeKM(1),hPl.AltitudeKM(end),hPl.nRow);
+
+InterpImgD(hPl.nRow,hPl.nCol,nFrames) = nan;
+for i = 1:nFrames
+  % 80 x 12480    %ImgD(:,:,i)
+  InterpImgD(:,:,i) = interp2(hPl.freqMHz, hPl.AltitudeKM,...
+                              ImgD(:,(i-1)*Nfreq+1:i*Nfreq),...
+                              hPl.freqLin,hPl.AltInt);
+end
 %% setup first image
 MS = MonitorSizes();
 %[ hHst hMP hHst2 hCCf hPl ] = makeplot(PixRng,ImgD,PrC(1),histFreq,histCoord,...
 %                    PrC(2),PrC(5),PrC(9),PrC(8),PlYLim,PrC(11)); 
-[ hMP hCCf hPl ] = makeplot(PixRng,InterpImgD,PrC,...
+[hMP, hCCf, hPl] = makeplot(PixRng,InterpImgD,PrC,...
                     PlYLim,MS,hPl,fn,hPl.nRow,hPl.nCol,pAlt,pFreq);
                 
 hPl = makeControls(nFrames,iFr,InterpImgD,hMP,hPl,hPl.nCol,hPl.nRow,...
@@ -221,5 +233,6 @@ end
 if PrC(8)
 hPl = plasmaPlay([],[],iFr,InterpImgD,hMP,hPl,hPl.IpAlt,hPl.IpFreq,hPl.nCol,hPl.nRow,fn,PrC,MS);
 end
-
+%%
+if ~nargout, clear, end
 end

@@ -201,19 +201,23 @@ title(hHst.axPPstem,['Pixel Process at: (Freq[MHz],Alt[km]) = (',...
 
 xlabel(hHst.axPPstem,'Frame #'),ylabel(hHst.axPPstem,'Pixel Value')
 
-if Actual, display(['Weights replaced: ',int2str(sum(RealHit(iRow,iCol,:))),' times.'])
-else       display(['Weights replaced: ',int2str(sum(    Hit(iRow,iCol,:))),' times.'])
+if Actual
+    disp(['Weights replaced: ',int2str(sum(RealHit(iRow,iCol,:))),' times.'])
+else
+    disp(['Weights replaced: ',int2str(sum(    Hit(iRow,iCol,:))),' times.'])
 end
 
-display(['for (r,c) = (',int2str(iRow),',',int2str(iCol),...
+disp(['for (r,c) = (',int2str(iRow),',',int2str(iCol),...
     ') = (',num2str(hHst.PxPk(k,1)),',',num2str(hHst.PxPk(k,2)),') was replaced at frame #''s:'])
 display(num2str(HitFrm{iRow,iCol}))
 end
 %% play movie
 % play movie
 if PrC(10)
-    if Actual, playFrames(ImgD,nFrames,hMP,hCCf,hPl,hHst,PixRng,HistRng,PrC,RealHit)
-    else       playFrames(ImgD,nFrames,hMP,hCCf,hPl,hHst,PixRng,HistRng,PrC,Hit    )
+    if Actual
+        playFrames(ImgD,nFrames,hMP,hCCf,hPl,hHst,PixRng,HistRng,PrC,RealHit)
+    else
+        playFrames(ImgD,nFrames,hMP,hCCf,hPl,hHst,PixRng,HistRng,PrC,Hit    )
     end
 end
 
