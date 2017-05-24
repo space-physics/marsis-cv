@@ -12,6 +12,6 @@ Let's talk if you're interested in this code.
 
 Using
 =====
-First, `download data <https://github.com/scienceopen/marsis-utils>`_, then::
+First, `download data <https://github.com/scivision/marsis-utils>`_, then::
 
   MDproc
